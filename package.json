@@ -1,0 +1,31 @@
+{
+  "name": "whatsapp-ai-crm",
+  "version": "0.1.0",
+  "description": "WhatsApp Linked-Device AI CRM with Ollama (unfiltered direct tone)",
+  "private": true,
+  "scripts": {
+    "start": "npm run dev",
+    "dev": "npm run ensure-infra && npm run ensure-model && npm run kill-worker && npx concurrently --kill-others --names \"API,WORKER\" --prefix-colors \"cyan,green\" \"cd apps/api-server && node index.js\" \"cd apps/whatsapp-worker && node index.js\"",
+    "dev:parallel": "npm run ensure-infra && npm run ensure-model && npm run kill-worker && (command -v ./node_modules/.bin/concurrently >/dev/null && ./node_modules/.bin/concurrently --kill-others --names \"API,WORKER\" --prefix-colors \"cyan,green\" \"cd apps/api-server && node index.js\" \"cd apps/whatsapp-worker && node index.js\" || npx concurrently --kill-others --names \"API,WORKER\" --prefix-colors \"cyan,green\" \"cd apps/api-server && node index.js\" \"cd apps/whatsapp-worker && node index.js\")",
+    "dev:parallel": "npm run ensure-infra && npm run ensure-model && npm run kill-worker && ./node_modules/.bin/concurrently --kill-others --names \"API,WORKER\" --prefix-colors \"cyan,green\" \"cd apps/api-server && node index.js\" \"cd apps/whatsapp-worker && node index.js\"",
+    "dev:api": "cd apps/api-server && node index.js",
+    "dev:worker": "npm run kill-worker && cd apps/whatsapp-worker && node index.js",
+    "ensure-infra": "docker compose -f infra/docker-compose.yml up -d || docker-compose -f infra/docker-compose.yml up -d",
+    "ensure-model": "ollama list | grep -q direct-crm-agent || (echo 'direct-crm-agent model not found, running setup...' && npm run ollama:setup)",
+    "docker:infra": "docker compose -f infra/docker-compose.yml up -d || docker-compose -f infra/docker-compose.yml up -d",
+    "docker:down": "docker compose -f infra/docker-compose.yml down || docker-compose -f infra/docker-compose.yml down",
+    "docker:clean": "docker compose -f infra/docker-compose.yml down --remove-orphans || docker-compose -f infra/docker-compose.yml down --remove-orphans",
+    "kill-worker": "lsof -ti:3001 | xargs kill -9 2>/dev/null || true; pkill -f 'puppeteer|Google Chrome|chromium.*session' 2>/dev/null || true; echo 'Ports and browser sessions cleaned (if any were running)'",
+    "db:schema": "docker exec -i whatsapp-ai-crm-postgres psql -U crmuser -d wa_crm < packages/database/schema.sql || psql -U crmuser -d wa_crm -h localhost -f packages/database/schema.sql",
+    "ollama:setup": "ollama pull llama3.1:8b && ollama create direct-crm-agent -f Modelfile",
+    "install:all": "npm install && (cd apps/whatsapp-worker && npm install) && (cd apps/api-server && npm install) && (cd packages/database && npm install) && (cd packages/ai-agent && npm install)",
+    "setup": "npm run install:all && npm run docker:infra && npm run ollama:setup && echo 'Setup complete. Run: npm run dev' (single command for everything)",
+    "db:reset": "docker exec whatsapp-ai-crm-postgres psql -U crmuser -d wa_crm -c 'DROP SCHEMA public CASCADE; CREATE SCHEMA public;' && npm run db:schema"
+  },
+  "keywords": ["whatsapp", "ollama", "crm", "ai-agent", "linked-device"],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

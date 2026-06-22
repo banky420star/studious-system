@@ -1,0 +1,54 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: whatsapp-ai-crm-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: crmuser
+      POSTGRES_PASSWORD: crmpass
+      POSTGRES_DB: wa_crm
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ../packages/database/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U crmuser -d wa_crm"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: whatsapp-ai-crm-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+
+  # Ollama is intentionally commented out.
+  # We use your local/native Ollama (better on Mac) instead of the container.
+  # If you want the container version later, uncomment this service
+  # and update OLLAMA_URL in .env if needed.
+  #
+  # ollama:
+  #   image: ollama/ollama:latest
+  #   container_name: whatsapp-ai-crm-ollama
+  #   restart: unless-stopped
+  #   ports:
+  #     - "11434:11434"
+  #   volumes:
+  #     - ollama_data:/root/.ollama
+  #   healthcheck:
+  #     test: ["CMD", "ollama", "list"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 5
+  #     start_period: 25s
+
+volumes:
+  postgres_data:
+  redis_data:
+  # ollama_data:

@@ -1,0 +1,9 @@
+{
+  "name": "@wa-crm/ai-agent",
+  "version": "0.1.0",
+  "private": true,
+  "main": "ollama-agent.js",
+  "dependencies": {
+    "node-fetch": "^2.7.0"
+  }
+}
