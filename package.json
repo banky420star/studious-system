@@ -6,8 +6,6 @@
   "scripts": {
     "start": "npm run dev",
     "dev": "npm run ensure-infra && npm run ensure-model && npm run kill-worker && npx concurrently --kill-others --names \"API,WORKER\" --prefix-colors \"cyan,green\" \"cd apps/api-server && node index.js\" \"cd apps/whatsapp-worker && node index.js\"",
-    "dev:parallel": "npm run ensure-infra && npm run ensure-model && npm run kill-worker && (command -v ./node_modules/.bin/concurrently >/dev/null && ./node_modules/.bin/concurrently --kill-others --names \"API,WORKER\" --prefix-colors \"cyan,green\" \"cd apps/api-server && node index.js\" \"cd apps/whatsapp-worker && node index.js\" || npx concurrently --kill-others --names \"API,WORKER\" --prefix-colors \"cyan,green\" \"cd apps/api-server && node index.js\" \"cd apps/whatsapp-worker && node index.js\")",
-    "dev:parallel": "npm run ensure-infra && npm run ensure-model && npm run kill-worker && ./node_modules/.bin/concurrently --kill-others --names \"API,WORKER\" --prefix-colors \"cyan,green\" \"cd apps/api-server && node index.js\" \"cd apps/whatsapp-worker && node index.js\"",
     "dev:api": "cd apps/api-server && node index.js",
     "dev:worker": "npm run kill-worker && cd apps/whatsapp-worker && node index.js",
     "ensure-infra": "docker compose -f infra/docker-compose.yml up -d || docker-compose -f infra/docker-compose.yml up -d",
@@ -22,7 +20,13 @@
     "setup": "npm run install:all && npm run docker:infra && npm run ollama:setup && echo 'Setup complete. Run: npm run dev' (single command for everything)",
     "db:reset": "docker exec whatsapp-ai-crm-postgres psql -U crmuser -d wa_crm -c 'DROP SCHEMA public CASCADE; CREATE SCHEMA public;' && npm run db:schema"
   },
-  "keywords": ["whatsapp", "ollama", "crm", "ai-agent", "linked-device"],
+  "keywords": [
+    "whatsapp",
+    "ollama",
+    "crm",
+    "ai-agent",
+    "linked-device"
+  ],
   "author": "",
   "license": "MIT",
   "devDependencies": {
